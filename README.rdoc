@@ -9,12 +9,12 @@ This plugin works (has been tested) with redmine v1.4
 == Installation
 
 * Place the plugin into  +/path/to/redmine/vendor/plugins+ . The name of the plugin's directory/folder should be *redmine_wikicipher*.
-* Change directory to +/path/to/redmine/
-* Update redmine source executing "patch -p0 < +/path/to/redmine/vendor/plugins/wikicipher_plugin/patch/patch.diff"
+* Change directory to +/path/to/redmine/+
+* Update redmine source executing "patch -p0 < +/path/to/redmine/vendor/plugins/wikicipher_plugin/patch/patch.diff+"
 * Update the "database_cipher_key" configuration located in +/path/to/redmine/config/configuration.yml file with some random key (this key will be used to cipher/decipher the wiki content)
 * Restart redmine.
 
 == How to change the cipher key
 
-The key used to encrypt is based on the "database_cipher_key" configuration in the +/path/to/redmine/config/configuration.yml file.
-To modify the key, update the +/path/to/redmine/config/configuration.yml file, run the script +/path/to/wikicipherplugin/bin/updatekey.rb, passing the old key and the new key as parameters and restart redmine.
+The key used to encrypt is based on the "database_cipher_key" configuration in the +/path/to/redmine/config/configuration.yml+ file.
+To modify the key, update the +/path/to/redmine/config/configuration.yml file, run the script +/path/to/wikicipherplugin/bin/updatekey.rb+, passing the old key and the new key as parameters and restart redmine.
