@@ -1,0 +1,5 @@
+en:
+  redmine_wikicipher:
+    coded: "This text is ciphered"
+    decode: "Decipher"
+    encode: "Cipher"

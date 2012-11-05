@@ -1,0 +1,35 @@
+.wikicipher
+{
+	display: inline;
+background-image: url(../images/contextual/encrypt.png);
+background-repeat: no-repeat;
+
+background-color: #DDD;
+padding: 1px;
+}
+.codedLabel
+{
+	display: inline;
+font-style: italic;
+font-size: 1em;
+color: #333;
+padding-left: 16px;
+border-color: black;
+border-width: 1px;
+}
+
+.wikicipher_content{
+	display:none;
+}
+.wikicipher_head
+{
+
+}
+
+.icon-decrypt{
+	background-image: url(../images/contextual/decrypt.png);
+}
+
+.icon-encrypt{
+	background-image: url(../images/contextual/encrypt.png);
+}
