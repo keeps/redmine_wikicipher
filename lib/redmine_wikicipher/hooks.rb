@@ -8,6 +8,9 @@ module RedmineWikicipher
       })
    	end
 	def view_wiki_contextual(context={ })
+		page = context[:page]
+		current = page
+		parent = page.parent
 		#if params[:decode]=='1'
 		if context[:toggle]==nil
 			context[:toggle] = '1'
@@ -16,12 +19,14 @@ module RedmineWikicipher
 		else
 			context[:toggle] = '0'
 		end
-		if context[:toggle]=='1'
-			link = "<a href=\"/projects/"+context[:id]+"/wiki?decode="+context[:toggle]+"\" class=\"icon icon-decrypt\"><%= t 'redmine_wikicipher.decode' %></a>"
-		else
-			link = "<a href=\"/projects/"+context[:id]+"/wiki?decode="+context[:toggle]+"\" class=\"icon icon-encrypt\"><%= t 'redmine_wikicipher.encode' %></a>"
-		end
 
+		current = current.title
+
+		if context[:toggle]=='1'
+			link = "<a href=\"/projects/"+context[:id]+"/wiki/"+current+"?decode="+context[:toggle]+"\" class=\"icon icon-decrypt\"><%= t 'redmine_wikicipher.decode' %></a>"
+		else
+			link = "<a href=\"/projects/"+context[:id]+"/wiki/"+current+"?decode="+context[:toggle]+"\" class=\"icon icon-encrypt\"><%= t 'redmine_wikicipher.encode' %></a>"
+		end	
 		hideLink=1
 		text = context[:content].text
 		if text.scan(/\{\{coded\_start\}\}.*?\{\{coded\_stop\}\}/m).size>0

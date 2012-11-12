@@ -9,7 +9,7 @@
 <%= link_to_if_authorized(l(:button_rollback), {:action => 'edit', :id => @page.title, :version => @content.version }, :class => 'icon icon-cancel') unless @content.current_version? %>
 <% end %>
 <%= link_to_if_authorized(l(:label_history), {:action => 'history', :id => @page.title}, :class => 'icon icon-history') %>
-<%= call_hook(:view_wiki_contextual,{:id => @project.identifier, :toggle => params[:decode], :content=>@content}) %>
+<%= call_hook(:view_wiki_contextual,{:id => @project.identifier, :toggle => params[:decode], :content=>@content, :page =>@page }) %>
 </div>
 
 <%= wiki_page_breadcrumb(@page) %>

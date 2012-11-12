@@ -1,6 +1,5 @@
 .wikicipher
 {
-	display: inline;
 background-image: url(../images/contextual/encrypt.png);
 background-repeat: no-repeat;
 
@@ -9,7 +8,6 @@ padding: 1px;
 }
 .codedLabel
 {
-	display: inline;
 font-style: italic;
 font-size: 1em;
 color: #333;
