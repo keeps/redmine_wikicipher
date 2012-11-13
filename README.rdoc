@@ -9,6 +9,7 @@ This plugin works (has been tested) with redmine v1.4
 == Installation
 
 * Place the plugin into  +/path/to/redmine/vendor/plugins+ . The name of the plugin's directory/folder should be *redmine_wikicipher*.
+* Change directory to +/path/to/redmine/+ .
 * Update the "database_cipher_key" configuration located in +/path/to/redmine/config/configuration.yml file with some random key (this key will be used to cipher/decipher the wiki content)
 * Restart redmine.
 
