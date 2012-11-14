@@ -4,7 +4,9 @@ module Redmine
       module Helper
 
         def heads_for_wiki_formatter_with_wikicipher
+	 
           heads_for_wiki_formatter_without_wikicipher
+           if Redmine::Configuration['database_cipher_key'].to_s.strip != nil && Redmine::Configuration['database_cipher_key'].to_s.strip != ''
           unless @heads_for_wiki_formatter_with_wikicipher_included
             content_for :header_tags do
               javascript_include_tag('jstoolbar/wikicipher', :plugin => 'redmine_wikicipher') +
@@ -13,6 +15,7 @@ module Redmine
             end
             @heads_for_wiki_formatter_with_wikicipher_included = true
           end
+         end
         end
 
         alias_method_chain :heads_for_wiki_formatter, :wikicipher

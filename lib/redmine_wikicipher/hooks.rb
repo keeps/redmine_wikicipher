@@ -1,3 +1,4 @@
+require 'redmine'
 # encoding: utf-8
 module RedmineWikicipher
   class Hooks < Redmine::Hook::ViewListener
@@ -37,6 +38,9 @@ module RedmineWikicipher
 		end
 		if hideLink==1
 			link=""
+		end
+		if Redmine::Configuration['database_cipher_key'].to_s.strip == nil || Redmine::Configuration['database_cipher_key'].to_s.strip == ''
+		link=""	
 		end
 		#toggle = context[:toggle]
 		#link = toggle
