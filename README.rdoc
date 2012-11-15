@@ -17,3 +17,8 @@ This plugin works (has been tested) with redmine v1.4
 
 The key used to encrypt is based on the "database_cipher_key" configuration in the +/path/to/redmine/config/configuration.yml+ file.
 To modify the key, update the +/path/to/redmine/config/configuration.yml+ file, run the script +/path/to/wikicipherplugin/bin/updatekey.rb+, passing the old key and the new key as parameters and restart redmine.
+
+== How to remove the encryption
+
+The key used to encrypt is based on the "database_cipher_key" configuration in the +/path/to/redmine/config/configuration.yml+ file.
+To modify the key, update the +/path/to/redmine/config/configuration.yml+ file, setting the 'database_cipher_key' as empty , run the script +/path/to/wikicipherplugin/bin/updatekey.rb+, passing the old key as parameter and restart redmine.
