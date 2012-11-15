@@ -3,6 +3,7 @@
 require 'pg'
 require 'digest'
 require 'openssl'
+require 'yaml'
 
 def decrypt(text,key)
 	e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
@@ -20,35 +21,77 @@ def encrypt(text,key)
 	s.unpack('H*')[0].upcase
 end
 
-unless ARGV.length == 2
+unless ARGV.length > 0
   puts "Usage: ruby updatekey.rb oldkey newkey\n"
+  puts "       ruby updatekey.rb oldkey (to remove encryption)\n"
   exit
 end
 
-conn=PGconn.connect( :hostaddr=>"127.0.0.1", :port=>5432, :dbname=>"redmine", :user=>"redmine", :password=>'my_password')
-puts conn.internal_encoding
-# run the query
-res = conn.exec("SELECT id,text FROM wiki_contents")
 
+
+$VERBOSE=nil
 originalkey=Digest::SHA256.hexdigest(ARGV[0])
-newkey=Digest::SHA256.hexdigest(ARGV[1])
+newkey=nil
 
-res.each{ |row|
-    content = row["text"]
-    id = row["id"]
-    puts "CONTENT:"+content
-    puts "ID:"+id
-    matches = content.scan(/\{\{coded\_start\}\}.*?\{\{coded\_stop\}\}/m)
-    matches.each do |m|
-        tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
-        puts "TAG CONTENT:"+tagContent
-        decoded = decrypt(tagContent,originalkey)
-	encoded = encrypt(decoded,newkey)
-        encodedWithTags='{{coded_start}}'+encoded.strip+'{{coded_stop}}'
-        content = content.gsub(m, encodedWithTags)
-    end
-    conn.exec("UPDATE wiki_contents SET text='"+content+"' WHERE id="+id)
-}
+if ARGV[1].to_s.strip!=''
+	newkey=Digest::SHA256.hexdigest(ARGV[1])
+end
+
+config = YAML.load_file("db.yaml")
+@host = config["config"]["host"]
+@port = config["config"]["port"]
+@username = config["config"]["username"]
+@password = config["config"]["password"]
+@database = config["config"]["database"]
+
+if newkey!=nil
+	begin
+		conn=PGconn.connect( :hostaddr=>@host, :port=>@port, :dbname=>@database, :user=>@username, :password=>@password)
+		# run the query
+		res = conn.exec("SELECT id,text FROM wiki_contents")
+		res.each{ |row|
+		    content = row["text"]
+		    id = row["id"]
+		    matches = content.scan(/\{\{coded\_start\}\}.*?\{\{coded\_stop\}\}/m)
+		    matches.each do |m|
+			tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
+			puts "CODED:"+tagContent
+			decoded = decrypt(tagContent,originalkey)
+			puts "DECODED:"+tagContent
+			encoded = encrypt(decoded,newkey)
+			puts "RECODED:"+tagContent
+			puts "-------------------------------------"
+			encodedWithTags='{{coded_start}}'+encoded.strip+'{{coded_stop}}'
+			content = content.gsub(m, encodedWithTags)
+		    end
+		    conn.exec("UPDATE wiki_contents SET text='"+content+"' WHERE id="+id)
+		}
+	rescue OpenSSL::Cipher::CipherError
+		puts "Wrong key provided\n"
+	end
+else
+	begin
+		conn=PGconn.connect( :hostaddr=>@host, :port=>@port, :dbname=>@database, :user=>@username, :password=>@password)
+		# run the query
+		res = conn.exec("SELECT id,text FROM wiki_contents")
+		res.each{ |row|
+		    content = row["text"]
+		    id = row["id"]
+		    matches = content.scan(/\{\{coded\_start\}\}.*?\{\{coded\_stop\}\}/m)
+		    matches.each do |m|
+			tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
+			puts "CODED:"+tagContent
+			decoded = decrypt(tagContent,originalkey)
+			puts "DECODED:"+decoded
+			puts "-------------------------------------"
+			content = content.gsub(m, decoded)
+		    end
+		    conn.exec("UPDATE wiki_contents SET text='"+content+"' WHERE id="+id)
+		}
+	rescue OpenSSL::Cipher::CipherError
+		puts "Wrong key provided\n"
+	end
+end
 
 
 
