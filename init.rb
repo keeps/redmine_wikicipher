@@ -11,7 +11,7 @@ Redmine::Plugin.register :redmine_wikicipher do
   author_url 'mailto:sleroux@keep.pt'
   description 'This plugin adds the ability to encrypt section of text'
   version '0.0.2'
-  url 'https://github.com/keeps/redmine_wikicipher.git'
+  url 'https://github.com/keeps/redmine_wikicipher'
   if Redmine::VERSION::MAJOR > 1
     raise Redmine::PluginRequirementError.new("redmine_wikicipher plugin requires Redmine 1.x but current is #{Redmine::VERSION}")
   end
