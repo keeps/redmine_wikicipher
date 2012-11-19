@@ -1,5 +1,5 @@
  #!/usr/bin/env ruby
-
+require 'redmine'
 require 'pg'
 require 'digest'
 require 'openssl'
