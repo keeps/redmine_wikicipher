@@ -24,9 +24,9 @@ module RedmineWikicipher
 		current = current.title
 
 		if context[:toggle]=='1'
-			link = "<a href=\"/projects/"+context[:id]+"/wiki/"+current+"?decode="+context[:toggle]+"\" class=\"icon icon-decrypt\"><%= t 'redmine_wikicipher.decode' %></a>"
+			link = "<a href=\"/projects/"+context[:id]+"/wiki/"+current+"?version="+context[:version].to_s+"&decode="+context[:toggle]+"\" class=\"icon icon-decrypt\"><%= t 'redmine_wikicipher.decode' %></a>"
 		else
-			link = "<a href=\"/projects/"+context[:id]+"/wiki/"+current+"?decode="+context[:toggle]+"\" class=\"icon icon-encrypt\"><%= t 'redmine_wikicipher.encode' %></a>"
+			link = "<a href=\"/projects/"+context[:id]+"/wiki/"+current+"?version="+context[:version].to_s+"&decode="+context[:toggle]+"\" class=\"icon icon-encrypt\"><%= t 'redmine_wikicipher.encode' %></a>"
 		end	
 		hideLink=1
 		text = context[:content].text

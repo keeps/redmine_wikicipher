@@ -1,6 +1,7 @@
 require 'redmine'
 require 'dispatcher'
 require 'wiki_controller_patch'
+require 'wiki_page_patch'
 require_dependency 'redmine_wikicipher/hooks'
 require_dependency 'redmine_wikicipher/macros'
 require_dependency 'redmine/wiki_formatting/textile/wikicipher_helper'
@@ -17,7 +18,12 @@ Redmine::Plugin.register :redmine_wikicipher do
   end
 end
 
+ApplicationController.class_eval do
+   filter_parameter_logging :password, :text
+  end
 Dispatcher.to_prepare do
 	 require_dependency 'wiki_controller'
+         require_dependency 'wiki_page'
   WikiController.send(:include, WikiControllerPatch)
+  WikiPage.send(:include, WikiPagePatch)
 end
