@@ -139,6 +139,7 @@ module WikiControllerPatch
     @content = @page.content_for_version(params[:version])
 
     @contentTemp = WikiContent.new
+     @contentTemp.author = @content.author
     @contentTemp.text = @content.text
     @contentTemp.version = @content.version
     @contentTemp.page = @content.page
@@ -187,6 +188,7 @@ def edit_with_decription_tagged
     @content = @page.content_for_version(params[:version])
    
     @contentTemp = WikiContent.new
+    @contentTemp.author = @content.author
     @contentTemp.text = @content.text
     @contentTemp.version = @content.version
     @contentTemp.page = @content.page
