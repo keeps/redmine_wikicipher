@@ -3,3 +3,4 @@ en:
     coded: "This text is ciphered"
     decode: "Decipher"
     encode: "Cipher"
+    update: "Update date"

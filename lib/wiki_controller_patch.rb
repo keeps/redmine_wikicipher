@@ -34,7 +34,7 @@ module WikiControllerPatch
 		end
       		return originalText
 	end
-        def encodeOldVersion(originalText,params)
+        def encodeOldVersion(originalText,params,updated_on)
 		params[:decode]='1'
 		originalText = decodeContentWithTags(originalText,params)
 		if Redmine::Configuration['database_cipher_key'].to_s.strip != ''
@@ -143,12 +143,27 @@ module WikiControllerPatch
     @contentTemp.text = @content.text
     @contentTemp.version = @content.version
     @contentTemp.page = @content.page
+    @contentTemp.id = @content.id
+
+     @contentTemp.page_id = @content.page_id
+    @contentTemp.author_id = @content.author_id
+    @contentTemp.comments = @content.comments
+    @contentTemp.updated_on = @content.updated_on
+
     @content = @contentTemp
 
 
 
+
+
+
+
+
+
+
     #@content = @page.content_for_version(params[:version])
-    @content.text = decodeContent(@content.text,params);
+    decodedText = decodeContent(@content.text,params);
+    @content.text = decodedText
     if User.current.allowed_to?(:export_wiki_pages, @project)
       if params[:format] == 'pdf'
 	params[:decode]='1'
@@ -192,6 +207,13 @@ def edit_with_decription_tagged
     @contentTemp.text = @content.text
     @contentTemp.version = @content.version
     @contentTemp.page = @content.page
+    @contentTemp.id = @content.id
+    @contentTemp.page_id = @content.page_id
+    @contentTemp.author_id = @content.author_id
+    @contentTemp.comments = @content.comments
+    @contentTemp.updated_on = @content.updated_on
+
+
     @content = @contentTemp
     
 
@@ -233,15 +255,14 @@ def update_with_encryption
     @page.content = WikiContent.new(:page => @page) if @page.new_record?
     @page.safe_attributes = params[:wiki_page]
 
-
 	 @page.content.versions.each do |v|
         if(v.text.strip.match(/^\{\{history\_coded\_start\}\}/) && v.text.strip.match(/\{\{history\_coded\_stop\}\}$/))
-                
+		#v.save()
 	else
-        	v.text = encodeOldVersion(v.text.strip,params)
+                v.comments = "["+v.updated_on.to_s+"] "+v.comments
+        	v.text = encodeOldVersion(v.text.strip,params,v.updated_on)
         	v.save()
  	end
-	
     end
 
 

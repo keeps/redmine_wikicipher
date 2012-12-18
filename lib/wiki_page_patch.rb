@@ -47,12 +47,15 @@ module WikiPagePatch
     end
 
     def annotate_with_decryption(version=nil)
+     
     version = version ? version.to_i : self.content.version
+    logger.warn('annotate version:'+version.to_s)
     c = content.versions.find_by_version(version)
     if c
 	wa = WikiAnnotate.new(c)
         wa.lines.each do |line| 
-            line[2] = decodeContent(line[2])
+            logger.warn(line)
+            #line[2] = decodeContent(line[2])
 
 	end
         wa
@@ -75,6 +78,19 @@ module WikiPagePatch
     tempTo.author = content_to.author
     tempFrom.text = content_from.text
     tempFrom.author = content_from.author
+    tempFrom.id = content_from.id
+    tempTo.id = content_to.id
+    tempTo.page_id = content_to.page_id
+    tempFrom.page_id = content_from.page_id
+    tempTo.author_id = content_to.author_id
+    tempFrom.author_id = content_from.author_id
+    tempTo.comments = content_to.comments
+    tempFrom.comments = content_from.comments
+    tempTo.updated_on = content_to.updated_on
+    tempFrom.updated_on = content_from.updated_on
+    
+
+
     if(tempTo.text.strip.match(/^\{\{history\_coded\_start\}\}/m) && tempTo.text.strip.match(/\{\{history\_coded\_stop\}\}$/m))
 	tempTo.text=decodeContent(tempTo.text)
     else

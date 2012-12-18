@@ -3,3 +3,4 @@ pt:
     coded: "Este texto encontra-se cifrado"
     decode: "Decifrar"
     encode: "Cifrar"
+    update: "Data de atualização"
