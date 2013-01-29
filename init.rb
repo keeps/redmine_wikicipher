@@ -1,5 +1,8 @@
+#!/bin/env ruby
+# encoding: utf-8
+
 require 'redmine'
-require 'dispatcher'
+require 'dispatcher' unless Rails::VERSION::MAJOR >= 3
 require 'wiki_controller_patch'
 require 'wiki_page_patch'
 require_dependency 'redmine_wikicipher/hooks'
@@ -13,17 +16,30 @@ Redmine::Plugin.register :redmine_wikicipher do
   description 'This plugin adds the ability to encrypt section of text'
   version '0.0.2'
   url 'https://github.com/keeps/redmine_wikicipher'
-  if Redmine::VERSION::MAJOR > 1
-    raise Redmine::PluginRequirementError.new("redmine_wikicipher plugin requires Redmine 1.x but current is #{Redmine::VERSION}")
-  end
 end
 
-ApplicationController.class_eval do
-   filter_parameter_logging :password, :text
-  end
-Dispatcher.to_prepare do
-	 require_dependency 'wiki_controller'
-         require_dependency 'wiki_page'
-  WikiController.send(:include, WikiControllerPatch)
-  WikiPage.send(:include, WikiPagePatch)
+
+
+if Rails::VERSION::MAJOR >= 3
+	ActionDispatch::Callbacks.to_prepare do
+		require_dependency 'wiki_controller'
+         	require_dependency 'wiki_page'
+  		WikiController.send(:include, WikiControllerPatch)
+  		WikiPage.send(:include, WikiPagePatch)
+	end
+else
+	ApplicationController.class_eval do
+		filter_parameter_logging :password, :text
+	end
+	Dispatcher.to_prepare do
+		require_dependency 'wiki_controller'
+         	require_dependency 'wiki_page'
+  		WikiController.send(:include, WikiControllerPatch)
+  		WikiPage.send(:include, WikiPagePatch)
+	end
+
 end
+
+
+
+

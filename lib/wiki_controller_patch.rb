@@ -251,11 +251,24 @@ def edit_with_decription_tagged
 end
 
 def update_with_encryption
-    return render_403 unless editable?
+
+    if Redmine::VERSION::MAJOR > 1
+logger.warn("redmine 2.X")
+
+
+
+
+
+
+
+
+
+return render_403 unless editable?
+    was_new_page = @page.new_record?
     @page.content = WikiContent.new(:page => @page) if @page.new_record?
     @page.safe_attributes = params[:wiki_page]
-
-	 @page.content.versions.each do |v|
+ 
+    @page.content.versions.each do |v|
         if(v.text.strip.match(/^\{\{history\_coded\_start\}\}/) && v.text.strip.match(/\{\{history\_coded\_stop\}\}$/))
 		#v.save()
 	else
@@ -265,6 +278,92 @@ def update_with_encryption
  	end
     end
 
+
+
+    @content = @page.content
+    content_params = params[:content]
+    if content_params.nil? && params[:wiki_page].is_a?(Hash)
+      content_params = params[:wiki_page].slice(:text, :comments, :version)
+    end
+    content_params ||= {}
+
+    @content.comments = content_params[:comments]
+    @text = content_params[:text]
+    if params[:section].present? && Redmine::WikiFormatting.supports_section_edit?
+      @section = params[:section].to_i
+      @section_hash = params[:section_hash]
+      @content.text = Redmine::WikiFormatting.formatter.new(@content.text).update_section(params[:section].to_i, @text, @section_hash)
+    else
+      @content.version = content_params[:version] if content_params[:version]
+      @content.text = @text
+    end
+    @content.author = User.current
+
+    @content.text = encodeContent(@content.text,params)
+
+    if @page.save_with_content
+      attachments = Attachment.attach_files(@page, params[:attachments])
+      render_attachment_warning_if_needed(@page)
+      call_hook(:controller_wiki_edit_after_save, { :params => params, :page => @page})
+
+      respond_to do |format|
+        format.html { redirect_to :action => 'show', :project_id => @project, :id => @page.title }
+        format.api {
+          if was_new_page
+            render :action => 'show', :status => :created, :location => url_for(:controller => 'wiki', :action => 'show', :project_id => @project, :id => @page.title)
+          else
+            render_api_ok
+          end
+        }
+      end
+    else
+      respond_to do |format|
+        format.html { render :action => 'edit' }
+        format.api { render_validation_errors(@content) }
+      end
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    else
+
+
+
+    return render_403 unless editable?
+    @page.content = WikiContent.new(:page => @page) if @page.new_record?
+    @page.safe_attributes = params[:wiki_page]
+
+    @page.content.versions.each do |v|
+        if(v.text.strip.match(/^\{\{history\_coded\_start\}\}/) && v.text.strip.match(/\{\{history\_coded\_stop\}\}$/))
+		#v.save()
+	else
+                v.comments = "["+v.updated_on.to_s+"] "+v.comments
+        	v.text = encodeOldVersion(v.text.strip,params,v.updated_on)
+        	v.save()
+ 	end
+    end
 
     @content = @page.content_for_version(params[:version])
     @content.text = initial_page_content(@page) if @content.text.blank?
@@ -302,6 +401,8 @@ def update_with_encryption
       render :action => 'edit'
     end
 
+
+    end
   rescue ActiveRecord::StaleObjectError, Redmine::WikiFormatting::StaleSectionError
     # Optimistic locking exception
     flash.now[:error] = l(:notice_locking_conflict)

@@ -4,13 +4,13 @@ The Redmine Wikicipher plugin allows to encrypt sections of the Wiki
 
 == Compatibility
 
-This plugin works (has been tested) with redmine v1.4
-
+This plugin works (has been tested) with redmine v1.4.x and redmine v2.2.x. 
 == Installation
 
 * Place the plugin into  +/path/to/redmine/vendor/plugins+ . The name of the plugin's directory/folder should be *redmine_wikicipher*.
 * Change directory to +/path/to/redmine/+ .
 * Update the "database_cipher_key" configuration located in +/path/to/redmine/config/configuration.yml file with some random key (this key will be used to cipher/decipher the wiki content)
+* For redmine v2.2.x, edit the application.rb file (+/path/to/redmine/config/application.rb+), adding ":text" to the filter parameters (config.filter_parameters += [:password, :text]).
 * Restart redmine.
 
 == How to change the cipher key
