@@ -22,7 +22,8 @@ module WikiControllerPatch
 				if Redmine::Configuration['database_cipher_key'].to_s.strip != ''
 					key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
 					e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-					e.encrypt key
+					e.encrypt
+          e.pkcs5_keyivgen(key)
 					s = e.update tagContent
 					s << e.final
 					s = s.unpack('H*')[0].upcase
@@ -40,7 +41,8 @@ module WikiControllerPatch
 		if Redmine::Configuration['database_cipher_key'].to_s.strip != ''
 			key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
 			e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-			e.encrypt key
+			e.encrypt
+      e.pkcs5_keyivgen(key)
 			s = e.update originalText
 			s << e.final
 			s = s.unpack('H*')[0].upcase
@@ -57,11 +59,13 @@ module WikiControllerPatch
 				matches.each do |m|
 					tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
 					e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-					e.decrypt key
+					e.decrypt
+          e.pkcs5_keyivgen(key)
 					s = tagContent.to_a.pack("H*").unpack("C*").pack("c*")
 					s = e.update s
 					decoded = s << e.final
 					decoded = '{{cipher}}'+decoded+'{{cipher}}'
+          decoded = decoded.dup.force_encoding(Encoding::UTF_8)
 					originalText = originalText.gsub(m.strip, decoded.strip)
 				end
 			end			
@@ -75,11 +79,13 @@ module WikiControllerPatch
 			matches.each do |m|
 				tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
 				e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-				e.decrypt key
+				e.decrypt
+        e.pkcs5_keyivgen(key)
 				s = tagContent.to_a.pack("H*").unpack("C*").pack("c*")
 				s = e.update s
 				decoded = s << e.final
 				decoded = ''+decoded+''
+        decoded = decoded.dup.force_encoding(Encoding::UTF_8)
 				originalText = originalText.gsub(m.strip, decoded.strip)
 			end			
 		end
@@ -93,11 +99,13 @@ module WikiControllerPatch
 			matches.each do |m|
 				tagContent = m.gsub('{{history_coded_start}}','').gsub('{{history_coded_stop}}','').strip
 				e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-				e.decrypt key
+				e.decrypt
+        e.pkcs5_keyivgen(key)
 				s = tagContent.to_a.pack("H*").unpack("C*").pack("c*")
 				s = e.update s
 				decoded = s << e.final
 				decoded = ''+decoded+''
+        decoded = decoded.dup.force_encoding(Encoding::UTF_8)
 				originalText = originalText.gsub(m.strip, decoded.strip)
 			end
 			originalText = encodeContent(originalText,params)
@@ -109,11 +117,13 @@ module WikiControllerPatch
 			matches.each do |m|
 				tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
 				e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-				e.decrypt key
+				e.decrypt
+        e.pkcs5_keyivgen(key)
 				s = tagContent.to_a.pack("H*").unpack("C*").pack("c*")
 				s = e.update s
 				decoded = s << e.final
 				decoded = '{{decoded_start}}'+decoded+'{{decoded_stop}}'
+        decoded = decoded.dup.force_encoding(Encoding::UTF_8)
 				originalText = originalText.gsub(m.strip, decoded.strip)
 			end			
 		end
@@ -232,11 +242,13 @@ def edit_with_decription_tagged
 	matches.each do |m|
 		tagContent = m.gsub('{{history_coded_start}}','').gsub('{{history_coded_stop}}','').strip
 		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-		e.decrypt key
+		e.decrypt
+    e.pkcs5_keyivgen(key)
 		s = tagContent.to_a.pack("H*").unpack("C*").pack("c*")
 		s = e.update s
 		decoded = s << e.final
 		decoded = ''+decoded+''
+    decoded = decoded.dup.force_encoding(Encoding::UTF_8)
 		@content.text = @content.text.gsub(m.strip, decoded.strip)
 	end
     else
