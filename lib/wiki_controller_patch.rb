@@ -12,95 +12,65 @@ module WikiControllerPatch
   end
 
   module InstanceMethods
-	def encodeContent(originalText,params)
-		matches = originalText.scan(/\{\{cipher\}\}.*?\{\{cipher\}\}/m)
-		matches.each do |m|
-			tagContent = m.gsub('{{cipher}}','')
-			codedTag = ''
-			if tagContent != ''
-				codedTag = m
-				if Redmine::Configuration['database_cipher_key'].to_s.strip != ''
-					key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
-					e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-					e.encrypt key
-					s = e.update tagContent
-					s << e.final
-					s = s.unpack('H*')[0].upcase
-					encrypted = s
-					codedTag = '{{coded_start}}'+encrypted.strip+'{{coded_stop}}'
-				end
-			end
-			originalText = originalText.gsub(m, codedTag)
-		end
-      		return originalText
+	$key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
+	def encrypt(originalText)
+		
+		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
+		e.encrypt $key
+		s = e.update originalText
+		s << e.final
+		s = s.unpack('H*')[0].upcase
+		encrypted = s
+		return encrypted
 	end
-        def encodeOldVersion(originalText,params,updated_on)
-		params[:decode]='1'
-		originalText = decodeContentWithTags(originalText,params)
-		if Redmine::Configuration['database_cipher_key'].to_s.strip != ''
-			key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
-			e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-			e.encrypt key
-			s = e.update originalText
-			s << e.final
-			s = s.unpack('H*')[0].upcase
-			encrypted = s
-			originalText = '{{history_coded_start}}'+encrypted.strip+'{{history_coded_stop}}'
-		end
-      		return originalText
-	end
-	def decodeContentWithTags(originalText,params)
-		if params[:decode]=='1'
-			if Redmine::Configuration['database_cipher_key'].to_s.strip != ''
-				key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
-				matches = originalText.scan(/\{\{coded\_start\}\}.*?\{\{coded\_stop\}\}/m)	
-				matches.each do |m|
-					tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
-					e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-					e.decrypt key
-					s = tagContent.to_a.pack("H*").unpack("C*").pack("c*")
-					s = e.update s
-					decoded = s << e.final
-					decoded = '{{cipher}}'+decoded+'{{cipher}}'
-					originalText = originalText.gsub(m.strip, decoded.strip)
-				end
-			end			
-		end
-		return originalText
-	end
-	def decodeContentExport(originalText,params)
-		if params[:decode]=='1'
-			key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
-			matches = originalText.scan(/\{\{coded\_start\}\}.*?\{\{coded\_stop\}\}/m)	
-			matches.each do |m|
-				tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
-				e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-				e.decrypt key
-				s = tagContent.to_a.pack("H*").unpack("C*").pack("c*")
-				s = e.update s
-				decoded = s << e.final
-				decoded = ''+decoded+''
-				originalText = originalText.gsub(m.strip, decoded.strip)
-			end			
-		end
-		return originalText
-	end
-	def decodeContent(originalText,params)
-		key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
 
+	def decrypt(encodedContent)
+
+		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
+		e.decrypt $key
+		s = encodedContent.to_a.pack("H*").unpack("C*").pack("c*")
+		s = e.update s
+		decoded = s << e.final
+		return decoded
+	end
+
+
+	def encode(originalText,params,history)
+		if history==1
+			params[:decode]='1'
+			originalText = decodeContent(originalText,params,1,0)
+			if Redmine::Configuration['database_cipher_key'].to_s.strip != ''
+				encrypted = encrypt(originalText)
+				originalText = '{{history_coded_start}}'+encrypted.strip+'{{history_coded_stop}}'
+			end
+	      		return originalText
+		else
+			matches = originalText.scan(/\{\{cipher\}\}.*?\{\{cipher\}\}/m)
+			matches.each do |m|
+				tagContent = m.gsub('{{cipher}}','')
+				codedTag = ''
+				if tagContent != ''
+					codedTag = m
+					if Redmine::Configuration['database_cipher_key'].to_s.strip != ''
+						encrypted = encrypt(tagContent)
+						codedTag = '{{coded_start}}'+encrypted.strip+'{{coded_stop}}'
+					end
+				end
+				originalText = originalText.gsub(m, codedTag)
+			end
+	      		return originalText
+		end
+	end
+	def decodeContent(originalText,params,tags,export)
 		if(originalText.strip.match(/^\{\{history\_coded\_start\}\}/m) && originalText.strip.match(/\{\{history\_coded\_stop\}\}$/m))
 			matches = originalText.scan(/\{\{history\_coded\_start\}\}.*?\{\{history\_coded\_stop\}\}/m)	
 			matches.each do |m|
 				tagContent = m.gsub('{{history_coded_start}}','').gsub('{{history_coded_stop}}','').strip
-				e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-				e.decrypt key
-				s = tagContent.to_a.pack("H*").unpack("C*").pack("c*")
-				s = e.update s
-				decoded = s << e.final
+				decoded = decrypt(tagContent)
 				decoded = ''+decoded+''
 				originalText = originalText.gsub(m.strip, decoded.strip)
 			end
-			originalText = encodeContent(originalText,params)
+			originalText = encode(originalText,params,0)
 		end
 		
 		if params[:decode]=='1'
@@ -108,12 +78,14 @@ module WikiControllerPatch
 			matches = originalText.scan(/\{\{coded\_start\}\}.*?\{\{coded\_stop\}\}/m)	
 			matches.each do |m|
 				tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
-				e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-				e.decrypt key
-				s = tagContent.to_a.pack("H*").unpack("C*").pack("c*")
-				s = e.update s
-				decoded = s << e.final
-				decoded = '{{decoded_start}}'+decoded+'{{decoded_stop}}'
+				decoded = decrypt(tagContent)
+				if tags==1
+					decoded = '{{cipher}}'+decoded+'{{cipher}}'
+				elsif export==1
+					decoded = ''+decoded+''
+				else
+					decoded = '{{decoded_start}}'+decoded+'{{decoded_stop}}'
+				end
 				originalText = originalText.gsub(m.strip, decoded.strip)
 			end			
 		end
@@ -162,23 +134,23 @@ module WikiControllerPatch
 
 
     #@content = @page.content_for_version(params[:version])
-    decodedText = decodeContent(@content.text,params);
+    decodedText = decodeContent(@content.text,params,0,0);
     @content.text = decodedText
     if User.current.allowed_to?(:export_wiki_pages, @project)
       if params[:format] == 'pdf'
 	params[:decode]='1'
-         @content.text = decodeContentExport(@content.text,params);
+         @content.text = decodeContent(@content.text,params,0,1);
         send_data(wiki_page_to_pdf(@page, @project), :type => 'application/pdf', :filename => "#{@page.title}.pdf")
         return
       elsif params[:format] == 'html'
 	params[:decode]='1'
-	@content.text = decodeContentExport(@content.text,params);
+	@content.text = decodeContent(@content.text,params,0,1);
         export = render_to_string :action => 'export', :layout => false
         send_data(export, :type => 'text/html', :filename => "#{@page.title}.html")
         return
       elsif params[:format] == 'txt'
 	params[:decode]='1'
-	@content.text = decodeContentExport(@content.text,params);
+	@content.text = decodeContent(@content.text,params,0,1);
         send_data(@content.text, :type => 'text/plain', :filename => "#{@page.title}.txt")
         return
       end
@@ -240,7 +212,7 @@ def edit_with_decription_tagged
 		@content.text = @content.text.gsub(m.strip, decoded.strip)
 	end
     else
-	 @content.text = decodeContentWithTags(@content.text,params)
+	 @content.text = decodeContent(@content.text,params,1,0)
     end
     @text = @content.text
     if params[:section].present? && Redmine::WikiFormatting.supports_section_edit?
@@ -273,7 +245,7 @@ return render_403 unless editable?
 		#v.save()
 	else
                 v.comments = "["+v.updated_on.to_s+"] "+v.comments
-        	v.text = encodeOldVersion(v.text.strip,params,v.updated_on)
+        	v.text = encode(v.text.strip,params,1)
         	v.save()
  	end
     end
@@ -299,7 +271,7 @@ return render_403 unless editable?
     end
     @content.author = User.current
 
-    @content.text = encodeContent(@content.text,params)
+    @content.text = encode(@content.text,params,0)
 
     if @page.save_with_content
       attachments = Attachment.attach_files(@page, params[:attachments])
@@ -360,7 +332,7 @@ return render_403 unless editable?
 		#v.save()
 	else
                 v.comments = "["+v.updated_on.to_s+"] "+v.comments
-        	v.text = encodeOldVersion(v.text.strip,params,v.updated_on)
+        	v.text = encode(v.text.strip,params,1)
         	v.save()
  	end
     end
@@ -390,7 +362,7 @@ return render_403 unless editable?
       @content.text = @text
     end
     @content.author = User.current
-    @content.text = encodeContent(@content.text,params)
+    @content.text = encode(@content.text,params,0)
     @page.content = @content
     if @page.save
       attachments = Attachment.attach_files(@page, params[:attachments])
