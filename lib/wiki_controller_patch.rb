@@ -156,6 +156,7 @@ module WikiControllerPatch
         return
       end
     end
+    @content.text = @content.text.sub("!", "&#33;")
     @editable = editable?
     @sections_editable = @editable && User.current.allowed_to?(:edit_wiki_pages, @page.project) &&
       @content.current_version? &&
