@@ -1,0 +1,6 @@
+ru:
+  redmine_wikicipher:
+    coded: "Текст зашифрован"
+    decode: "Дешифровать"
+    encode: "Зашифровать"
+    update: "Дата обновления"
