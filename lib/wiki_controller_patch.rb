@@ -84,7 +84,7 @@ module WikiControllerPatch
 				elsif export==1
 					decoded = ''+decoded+''
 				else
-					decoded = '{{decoded_start}}'+decoded+'{{decoded_stop}}'
+					decoded = '{{decoded_start}} '+decoded+' {{decoded_stop}}'
 				end
 				originalText = originalText.gsub(m.strip, decoded.strip)
 			end			
