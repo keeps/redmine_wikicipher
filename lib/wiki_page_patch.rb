@@ -10,18 +10,26 @@ module WikiPagePatch
   	end
 
   module InstanceMethods
-	
+    $key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
+
+    def decrypt(encodedContent)
+
+		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
+		e.decrypt $key
+		s = encodedContent.to_a.pack("H*").unpack("C*").pack("c*")
+		s = e.update s
+		decoded = s << e.final
+		return decoded
+	end
+
+
+
     def decodeContentWithTags(originalText)
 		if Redmine::Configuration['database_cipher_key'].to_s.strip != ''
-				key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
 				matches = originalText.scan(/\{\{coded\_start\}\}.*?\{\{coded\_stop\}\}/m)	
 				matches.each do |m|
 					tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
-					e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-					e.decrypt key
-					s = tagContent.to_a.pack("H*").unpack("C*").pack("c*")
-					s = e.update s
-					decoded = s << e.final
+					decoded = decrypt(tagContent)
 					decoded = '{{cipher}}'+decoded+'{{cipher}}'
 					originalText = originalText.gsub(m.strip, decoded.strip)
 				end
@@ -30,15 +38,10 @@ module WikiPagePatch
 	end
 
     def decodeContent(originalText)
-	key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
 	matches = originalText.scan(/\{\{history\_coded\_start\}\}.*?\{\{history\_coded\_stop\}\}/m)	
 	matches.each do |m|
 		tagContent = m.gsub('{{history_coded_start}}','').gsub('{{history_coded_stop}}','').strip
-		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-		e.decrypt key
-		s = tagContent.to_a.pack("H*").unpack("C*").pack("c*")
-		s = e.update s
-		decoded = s << e.final
+		decoded = decrypt(tagContent)
 		decoded = ''+decoded+''
 		originalText = originalText.gsub(m.strip, decoded.strip)
 	end
