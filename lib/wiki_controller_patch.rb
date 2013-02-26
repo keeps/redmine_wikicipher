@@ -79,11 +79,13 @@ module WikiControllerPatch
 			matches.each do |m|
 				tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
 				decoded = decrypt(tagContent)
+				
 				if tags==1
 					decoded = '{{cipher}}'+decoded+'{{cipher}}'
 				elsif export==1
 					decoded = ''+decoded+''
 				else
+					decoded = decoded.sub("!", "&#33;")
 					decoded = '{{decoded_start}} '+decoded+' {{decoded_stop}}'
 				end
 				originalText = originalText.gsub(m.strip, decoded.strip)
@@ -156,7 +158,7 @@ module WikiControllerPatch
         return
       end
     end
-    @content.text = @content.text.sub("!", "&#33;")
+    #@content.text = @content.text.sub("!", "&#33;")
     @editable = editable?
     @sections_editable = @editable && User.current.allowed_to?(:edit_wiki_pages, @page.project) &&
       @content.current_version? &&
