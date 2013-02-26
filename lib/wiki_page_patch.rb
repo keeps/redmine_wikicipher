@@ -31,7 +31,7 @@ module WikiPagePatch
 					tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
 					decoded = decrypt(tagContent)
 					decoded = '{{cipher}}'+decoded+'{{cipher}}'
-					originalText = originalText.gsub(m.strip, decoded.strip)
+					originalText = originalText.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
 				end
 			end			
 		return originalText
@@ -43,7 +43,7 @@ module WikiPagePatch
 		tagContent = m.gsub('{{history_coded_start}}','').gsub('{{history_coded_stop}}','').strip
 		decoded = decrypt(tagContent)
 		decoded = ''+decoded+''
-		originalText = originalText.gsub(m.strip, decoded.strip)
+		originalText = originalText.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
 	end
 	originalText = decodeContentWithTags(originalText)
 	return originalText

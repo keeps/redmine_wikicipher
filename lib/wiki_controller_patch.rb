@@ -56,7 +56,7 @@ module WikiControllerPatch
 						codedTag = '{{coded_start}}'+encrypted.strip+'{{coded_stop}}'
 					end
 				end
-				originalText = originalText.gsub(m, codedTag)
+				originalText = originalText.gsub(m.force_encoding("UTF-8"), codedTag.force_encoding("UTF-8"))
 			end
 	      		return originalText
 		end
@@ -68,7 +68,7 @@ module WikiControllerPatch
 				tagContent = m.gsub('{{history_coded_start}}','').gsub('{{history_coded_stop}}','').strip
 				decoded = decrypt(tagContent)
 				decoded = ''+decoded+''
-				originalText = originalText.gsub(m.strip, decoded.strip)
+				originalText = originalText.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
 			end
 			originalText = encode(originalText,params,0)
 		end
@@ -88,7 +88,7 @@ module WikiControllerPatch
 					decoded = decoded.sub("!", "&#33;")
 					decoded = '{{decoded_start}} '+decoded+' {{decoded_stop}}'
 				end
-				originalText = originalText.gsub(m.strip, decoded.strip)
+				originalText = originalText.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
 			end			
 		end
 		return originalText
@@ -213,7 +213,7 @@ def edit_with_decription_tagged
 		s = e.update s
 		decoded = s << e.final
 		decoded = ''+decoded+''
-		@content.text = @content.text.gsub(m.strip, decoded.strip)
+		@content.text = @content.text.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
 	end
     else
 	 @content.text = decodeContent(@content.text,params,1,0)
