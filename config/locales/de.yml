@@ -1,0 +1,6 @@
+de:
+  redmine_wikicipher:
+    coded: "Dieser Text ist verschlüsselt"
+    decode: "Entschlüsseln"
+    encode: "Verschlüsseln"
+    update: "Seite aktualisieren"
