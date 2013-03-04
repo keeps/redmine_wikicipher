@@ -13,6 +13,8 @@ module RedmineWikicipher
 		current = page
 		parent = page.parent
 		#if params[:decode]=='1'
+		
+
 		if context[:toggle]==nil
 			context[:toggle] = '1'
 		elsif context[:toggle]=='0'
@@ -20,6 +22,13 @@ module RedmineWikicipher
 		else
 			context[:toggle] = '0'
 		end
+		isKeyValid = WikiControllerPatch.isKeyValid(context[:content].text)
+		if isKeyValid == '0'
+			if context[:toggle]=='0'
+				context[:toggle]='1'
+			end
+		end
+		
 
 		current = current.title
 

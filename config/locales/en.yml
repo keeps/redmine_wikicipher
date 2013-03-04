@@ -4,3 +4,4 @@ en:
     decode: "Decipher"
     encode: "Cipher"
     update: "Update date"
+    bad_decrypt: "Error deciphering wiki. Check that your key 'database_cipher_key' in configuration file is correct."

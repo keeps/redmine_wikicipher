@@ -25,7 +25,8 @@ module WikiPagePatch
 
 
     def decodeContentWithTags(originalText)
-		if Redmine::Configuration['database_cipher_key'].to_s.strip != ''
+		begin
+			if Redmine::Configuration['database_cipher_key'].to_s.strip != ''
 				matches = originalText.scan(/\{\{coded\_start\}\}.*?\{\{coded\_stop\}\}/m)	
 				matches.each do |m|
 					tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
@@ -33,19 +34,26 @@ module WikiPagePatch
 					decoded = '{{cipher}}'+decoded+'{{cipher}}'
 					originalText = originalText.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
 				end
-			end			
+			end	
+		rescue
+			#originalText = l("redmine_wikicipher.bad_decrypt")
+		end		
 		return originalText
 	end
 
     def decodeContent(originalText)
-	matches = originalText.scan(/\{\{history\_coded\_start\}\}.*?\{\{history\_coded\_stop\}\}/m)	
-	matches.each do |m|
-		tagContent = m.gsub('{{history_coded_start}}','').gsub('{{history_coded_stop}}','').strip
-		decoded = decrypt(tagContent)
-		decoded = ''+decoded+''
-		originalText = originalText.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
+	begin
+		matches = originalText.scan(/\{\{history\_coded\_start\}\}.*?\{\{history\_coded\_stop\}\}/m)	
+		matches.each do |m|
+			tagContent = m.gsub('{{history_coded_start}}','').gsub('{{history_coded_stop}}','').strip
+			decoded = decrypt(tagContent)
+			decoded = ''+decoded+''
+			originalText = originalText.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
+		end
+		originalText = decodeContentWithTags(originalText)
+	rescue
+		#originalText = l("redmine_wikicipher.bad_decrypt")
 	end
-	originalText = decodeContentWithTags(originalText)
 	return originalText
     end
 

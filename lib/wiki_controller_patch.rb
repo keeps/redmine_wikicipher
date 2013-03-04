@@ -10,9 +10,24 @@ module WikiControllerPatch
       alias_method_chain :edit, :decription_tagged
     end
   end
+  
 
+	def self.isKeyValid(originalText)
+		$key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
+		begin
+			matches = originalText.scan(/\{\{coded\_start\}\}.*?\{\{coded\_stop\}\}/m)	
+			matches.each do |m|
+				tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
+				decoded = decrypt(tagContent)
+			end
+			return '1'
+		rescue
+			return '0'
+		end
+	end	 
   module InstanceMethods
 	$key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
+
 	def encrypt(originalText)
 		
 		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
@@ -36,6 +51,7 @@ module WikiControllerPatch
 
 
 	def encode(originalText,params,history)
+		flash.delete(:warning) 
 		if history==1
 			params[:decode]='1'
 			originalText = decodeContent(originalText,params,1,0)
@@ -62,34 +78,43 @@ module WikiControllerPatch
 		end
 	end
 	def decodeContent(originalText,params,tags,export)
+		flash.delete(:warning) 
 		if(originalText.strip.match(/^\{\{history\_coded\_start\}\}/m) && originalText.strip.match(/\{\{history\_coded\_stop\}\}$/m))
-			matches = originalText.scan(/\{\{history\_coded\_start\}\}.*?\{\{history\_coded\_stop\}\}/m)	
-			matches.each do |m|
-				tagContent = m.gsub('{{history_coded_start}}','').gsub('{{history_coded_stop}}','').strip
-				decoded = decrypt(tagContent)
-				decoded = ''+decoded+''
-				originalText = originalText.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
+			begin
+				matches = originalText.scan(/\{\{history\_coded\_start\}\}.*?\{\{history\_coded\_stop\}\}/m)	
+				matches.each do |m|
+					tagContent = m.gsub('{{history_coded_start}}','').gsub('{{history_coded_stop}}','').strip
+					decoded = decrypt(tagContent)
+					decoded = ''+decoded+''
+					originalText = originalText.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
+				end
+				originalText = encode(originalText,params,0)
+			rescue
+				flash[:warning] = l("redmine_wikicipher.bad_decrypt")
 			end
-			originalText = encode(originalText,params,0)
 		end
 		
 		if params[:decode]=='1'
-			
-			matches = originalText.scan(/\{\{coded\_start\}\}.*?\{\{coded\_stop\}\}/m)	
-			matches.each do |m|
-				tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
-				decoded = decrypt(tagContent)
+			begin
+				matches = originalText.scan(/\{\{coded\_start\}\}.*?\{\{coded\_stop\}\}/m)	
+				matches.each do |m|
+					tagContent = m.gsub('{{coded_start}}','').gsub('{{coded_stop}}','').strip
+					decoded = decrypt(tagContent)
 				
-				if tags==1
-					decoded = '{{cipher}}'+decoded+'{{cipher}}'
-				elsif export==1
-					decoded = ''+decoded+''
-				else
-					decoded = decoded.sub("!", "&#33;")
-					decoded = '{{decoded_start}} '+decoded+' {{decoded_stop}}'
-				end
-				originalText = originalText.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
-			end			
+					if tags==1
+						decoded = '{{cipher}}'+decoded+'{{cipher}}'
+					elsif export==1
+						decoded = ''+decoded+''
+					else
+						decoded = decoded.sub("!", "&#33;")
+						decoded = '{{decoded_start}} '+decoded+' {{decoded_stop}}'
+					end
+					originalText = originalText.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
+				end	
+			rescue
+				flash[:warning] = l("redmine_wikicipher.bad_decrypt")
+				#originalText = l("redmine_wikicipher.bad_decrypt")
+			end		
 		end
 		return originalText
 	end
