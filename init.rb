@@ -14,7 +14,7 @@ Redmine::Plugin.register :redmine_wikicipher do
   author 'Sébastien Leroux'
   author_url 'mailto:sleroux@keep.pt'
   description 'This plugin adds the ability to encrypt section of text'
-  version '0.0.4'
+  version '0.0.5'
   url 'https://github.com/keeps/redmine_wikicipher'
 end
 
