@@ -51,6 +51,8 @@ module WikiControllerPatch
 
 
 	def encode(originalText,params,history)
+		originalText = originalText.gsub(/\\/) { '\\\\' }
+		#originalText = originalText.gsub("&", '\\\\&')
 		flash.delete(:warning) 
 		if history==1
 			params[:decode]='1'
