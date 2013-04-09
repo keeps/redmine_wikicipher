@@ -172,8 +172,10 @@ module WikiControllerPatch
       if params[:format] == 'pdf'
 	params[:decode]='1'
          @content.text = decodeContent(@content.text,params,0,1);
-	@page.content = @content
-        send_data(wiki_page_to_pdf(@page, @project), :type => 'application/pdf', :filename => "#{@page.title}.pdf")
+	 
+	 clone = @page.clone
+	clone.content = @content
+        send_data(wiki_page_to_pdf(clone, @project), :type => 'application/pdf', :filename => "#{clone.title}.pdf")
         return
       elsif params[:format] == 'html'
 	params[:decode]='1'
