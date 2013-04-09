@@ -40,12 +40,12 @@ module WikiControllerPatch
 	end
 
 	def decrypt(encodedContent)
-
 		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
 		e.decrypt $key
 		s = encodedContent.to_a.pack("H*").unpack("C*").pack("c*")
 		s = e.update s
 		decoded = s << e.final
+
 		return decoded
 	end
 
@@ -57,12 +57,14 @@ module WikiControllerPatch
 		if history==1
 			params[:decode]='1'
 			originalText = decodeContent(originalText,params,1,0)
+			originalText = originalText.gsub(/\\/) { '\\\\' }
 			if Redmine::Configuration['database_cipher_key'].to_s.strip != ''
 				encrypted = encrypt(originalText)
 				originalText = '{{history_coded_start}}'+encrypted.strip+'{{history_coded_stop}}'
 			end
 	      		return originalText
 		else
+			
 			matches = originalText.scan(/\{\{cipher\}\}.*?\{\{cipher\}\}/m)
 			matches.each do |m|
 				tagContent = m.gsub('{{cipher}}','')
@@ -76,6 +78,7 @@ module WikiControllerPatch
 				end
 				originalText = originalText.gsub(m.force_encoding("UTF-8"), codedTag.force_encoding("UTF-8"))
 			end
+			originalText = originalText.gsub(/\\\\/) { '\\' }
 	      		return originalText
 		end
 	end
