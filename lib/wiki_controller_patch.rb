@@ -259,7 +259,6 @@ def edit_with_decription_tagged
 end
 
 def update_with_encryption
-
     if Redmine::VERSION::MAJOR > 1
 logger.warn("redmine 2.X")
 
@@ -358,7 +357,6 @@ return render_403 unless editable?
     else
 
 
-
     return render_403 unless editable?
     @page.content = WikiContent.new(:page => @page) if @page.new_record?
     @page.safe_attributes = params[:wiki_page]
@@ -392,7 +390,10 @@ return render_403 unless editable?
     if params[:section].present? && Redmine::WikiFormatting.supports_section_edit?
       @section = params[:section].to_i
       @section_hash = params[:section_hash]
-      @content.text = Redmine::WikiFormatting.formatter.new(@content.text).update_section(params[:section].to_i, @text, @section_hash)
+      params[:decode]='1'
+       decodedText = decodeContent(@content.text,params,1,0)
+       decodedText2 = decodeContent(@text,params,1,0)
+      @content.text = Redmine::WikiFormatting.formatter.new(decodedText).update_section(params[:section].to_i, decodedText2, @section_hash)
     else
       @content.version = params[:content][:version]
       @content.text = @text
