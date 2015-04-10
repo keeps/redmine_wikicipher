@@ -308,7 +308,7 @@ return render_403 unless editable?
 
     @content.text = encode(@content.text,params,0)
 
-    if @page.save_with_content
+    if @page.save_with_content( @content )
       attachments = Attachment.attach_files(@page, params[:attachments])
       render_attachment_warning_if_needed(@page)
       call_hook(:controller_wiki_edit_after_save, { :params => params, :page => @page})
