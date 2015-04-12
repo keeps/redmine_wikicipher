@@ -1,5 +1,7 @@
 // encrypt_tag
 
+
+
 jsToolBar.prototype.elements.wikicipher = {
   type: 'button',
   title: 'Wikicipher tag',
@@ -9,8 +11,20 @@ jsToolBar.prototype.elements.wikicipher = {
 }
 
 window.onload=function(){
-	var warn = document.getElementsByClassName('flash warning');
-	if (warn.length>0){
-		document.getElementsByClassName('jstb_wikicipher')[0].hide();
+	try{
+		var warn = document.getElementsByClassName('flash warning');
+		var isWiki = "/Wiki/edit";
+		if (warn.length>0){
+			document.getElementsByClassName('jstb_wikicipher')[0].hide();
+		}
+		if(window.location.pathname.indexOf(isWiki, window.location.pathname.length - isWiki.length) !== -1){
+			// nothing to do...
+		}else{
+			//hide wikicipher toolbar button
+			document.getElementsByClassName('jstb_wikicipher')[0].style.visibility='hidden';
+		}
+	}catch(e){
+		alert(e);
 	}
+
 };
