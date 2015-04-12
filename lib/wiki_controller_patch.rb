@@ -45,7 +45,6 @@ module WikiControllerPatch
 		s = encodedContent.to_a.pack("H*").unpack("C*").pack("c*")
 		s = e.update s
 		decoded = s << e.final
-
 		return decoded
 	end
 
@@ -109,9 +108,10 @@ module WikiControllerPatch
 					if tags==1
 						decoded = '{{cipher}}'+decoded+'{{cipher}}'
 					elsif export==1
+
 						decoded = ''+decoded+''
 					else
-						decoded = decoded.sub("!", "&#33;")
+            decoded = "<notextile>"+decoded+"</notextile>"
 						decoded = '{{decoded_start}} '+decoded+' {{decoded_stop}}'
 					end
 					originalText = originalText.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
