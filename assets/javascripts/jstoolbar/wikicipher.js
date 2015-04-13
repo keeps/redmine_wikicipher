@@ -12,11 +12,17 @@ jsToolBar.prototype.elements.wikicipher = {
 
 window.onload=function(){
 	var warn = document.getElementsByClassName('flash warning');
-	var isWiki = "/Wiki/edit";
+	var wikiEdit = "/edit";
+	var wiki = "wiki";
 	if (warn.length>0){
 		document.getElementsByClassName('jstb_wikicipher')[0].hide();
 	}
-	if(window.location.pathname.indexOf(isWiki, window.location.pathname.length - isWiki.length) !== -1){
+	var pathName = window.location.pathname;
+	if(
+		(pathName.indexOf(wiki)>=0 && pathName.indexOf(wikiEdit, pathName.length - wikiEdit.length) !== -1)
+		||
+		(pathName.indexOf(wiki, pathName.length - wiki.length) !== -1)
+	){
 		// nothing to do...
 	}else{
 		//hide wikicipher toolbar buttons
