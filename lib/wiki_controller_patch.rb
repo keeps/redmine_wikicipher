@@ -111,7 +111,7 @@ module WikiControllerPatch
 
 						decoded = ''+decoded+''
 					else
-            decoded = "<notextile>"+decoded+"</notextile>"
+						decoded = "<notextile>"+decoded+"</notextile>"
 						decoded = '{{decoded_start}} '+decoded+' {{decoded_stop}}'
 					end
 					originalText = originalText.gsub(m.strip.force_encoding("UTF-8"), decoded.strip.force_encoding("UTF-8"))
