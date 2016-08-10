@@ -33,10 +33,10 @@ module RedmineWikicipher
 		current = current.title
 
 		if context[:toggle]=='1'
-			link = "<a href=\"/projects/"+context[:id]+"/wiki/"+current+"?version="+context[:version].to_s+"&decode="+context[:toggle]+"\" class=\"icon icon-decrypt\"><%= t 'redmine_wikicipher.decode' %></a>"
+			link = "<a href=\""+projects_path+"/"+context[:id]+"/wiki/"+current+"?version="+context[:version].to_s+"&decode="+context[:toggle]+"\" class=\"icon icon-decrypt\"><%= t 'redmine_wikicipher.decode' %></a>"
 			link = link.force_encoding("UTF-8")
 		else
-			link = "<a href=\"/projects/"+context[:id]+"/wiki/"+current+"?version="+context[:version].to_s+"&decode="+context[:toggle]+"\" class=\"icon icon-encrypt\"><%= t 'redmine_wikicipher.encode' %></a>"
+			link = "<a href=\""+projects_path+"/"+context[:id]+"/wiki/"+current+"?version="+context[:version].to_s+"&decode="+context[:toggle]+"\" class=\"icon icon-encrypt\"><%= t 'redmine_wikicipher.encode' %></a>"
 			link = link.force_encoding("UTF-8")
 		end	
 		hideLink=1
