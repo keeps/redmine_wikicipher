@@ -4,6 +4,6 @@ if Gem::Version.new("3.0") > Gem::Version.new(Rails.version) then
   end
 else
   RedmineApp::Application.routes.draw do
-    match 'projects/:id/wiki/decode', :to => 'redmine_wikicipher', :action => 'decode'
+    get 'projects/:id/wiki/decode', :to => 'redmine_wikicipher', :action => 'decode'
   end
 end
