@@ -42,7 +42,7 @@ module WikiControllerPatch
 	def decrypt(encodedContent)
 		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
 		e.decrypt $key
-		s = encodedContent.to_a.pack("H*").unpack("C*").pack("c*")
+		s = Array(encodedContent).pack("H*").unpack("C*").pack("c*")
 		s = e.update s
 		decoded = s << e.final
 		return decoded
