@@ -11,11 +11,13 @@ module WikiPagePatch
 
   module InstanceMethods
     $key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
-
+    $iv =  '12345678'
     def decrypt(encodedContent)
 
-		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-		e.decrypt $key
+		e = OpenSSL::Cipher.new 'DES-EDE3-CBC'
+		e.decrypt 
+        e.key = $key[0..23]
+        e.iv = $iv
 		s = encodedContent.to_a.pack("H*").unpack("C*").pack("c*")
 		s = e.update s
 		decoded = s << e.final

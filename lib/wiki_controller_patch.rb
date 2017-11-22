@@ -26,25 +26,38 @@ module WikiControllerPatch
 		end
 	end	 
   module InstanceMethods
-	$key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
+  $key = Digest::SHA256.hexdigest(Redmine::Configuration['database_cipher_key'].to_s.strip)
+  $iv =  '12345678'
+  puts($key)
+  puts($iv)
 
 	def encrypt(originalText)
-		
-		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-		e.encrypt $key
+		logger.warn('Trying to encode:')
+		e = OpenSSL::Cipher.new 'DES-EDE3-CBC'
+		e.encrypt
+    e.key = $key[0..23]
+    e.iv = $iv
 		s = e.update originalText
 		s << e.final
-		s = s.unpack('H*')[0].upcase
+		logger.warn('before unpack: '+ s)
+    s = s.unpack('H*')[0]
 		encrypted = s
+    logger.warn('encrypted: '+ encrypted)
 		return encrypted
 	end
 
 	def decrypt(encodedContent)
-		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
-		e.decrypt $key
-		s = encodedContent.to_a.pack("H*").unpack("C*").pack("c*")
-		s = e.update s
+		logger.warn('Trying to decode: ')
+    e = OpenSSL::Cipher.new 'DES-EDE3-CBC'
+		e.decrypt
+    e.key = $key[0..23]
+    e.iv = $iv
+    logger.warn('encodedContent: '+encodedContent)
+		s = encodedContent.lines.to_a.pack("H*").unpack("C*").pack("c*")
+    logger.warn('s: '+s)
+		s = e.update(s)
 		decoded = s << e.final
+    logger.warn('decoded: '+ decoded)
 		return decoded
 	end
 
@@ -239,7 +252,7 @@ def edit_with_decription_tagged
 	matches = @content.text.scan(/\{\{history\_coded\_start\}\}.*?\{\{history\_coded\_stop\}\}/m)	
 	matches.each do |m|
 		tagContent = m.gsub('{{history_coded_start}}','').gsub('{{history_coded_stop}}','').strip
-		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
+		e = OpenSSL::Cipher.new 'DES-EDE3-CBC'
 		e.decrypt key
 		s = tagContent.to_a.pack("H*").unpack("C*").pack("c*")
 		s = e.update s
