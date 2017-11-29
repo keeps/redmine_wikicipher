@@ -30,7 +30,7 @@ module WikiControllerPatch
 
 	def encrypt(originalText)
 		
-		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
+		e = OpenSSL::Cipher.new 'DES-EDE3-CBC'
 		e.encrypt $key
 		s = e.update originalText
 		s << e.final
@@ -40,9 +40,9 @@ module WikiControllerPatch
 	end
 
 	def decrypt(encodedContent)
-		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
+		e = OpenSSL::Cipher.new 'DES-EDE3-CBC'
 		e.decrypt $key
-		s = encodedContent.to_a.pack("H*").unpack("C*").pack("c*")
+		s = encodedContent.lines.pack("H*").unpack("C*").pack("c*")
 		s = e.update s
 		decoded = s << e.final
 		return decoded
@@ -239,7 +239,7 @@ def edit_with_decription_tagged
 	matches = @content.text.scan(/\{\{history\_coded\_start\}\}.*?\{\{history\_coded\_stop\}\}/m)	
 	matches.each do |m|
 		tagContent = m.gsub('{{history_coded_start}}','').gsub('{{history_coded_stop}}','').strip
-		e = OpenSSL::Cipher::Cipher.new 'DES-EDE3-CBC'
+		e = OpenSSL::Cipher.new 'DES-EDE3-CBC'
 		e.decrypt key
 		s = tagContent.to_a.pack("H*").unpack("C*").pack("c*")
 		s = e.update s

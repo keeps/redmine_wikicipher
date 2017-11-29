@@ -8,6 +8,7 @@ Redmine version (has been tested in, see specific branch for a specific redmine 
 * v1.4.x
 * v2.2.x
 * v2.5.x
+* v3.4.x
 DBMS:
 * PostgreSQL
 * Others might work but further tests are required
